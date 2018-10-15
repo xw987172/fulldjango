@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <title>获取地理位置</title>
+    <style type="text/css">#iCenter{width:300px; height: 280px; border:1px #000 solid;margin:20px auto;}</style>
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.3&key=e80a96e78f6ef6f623c101823d01bde6"></script>
+</head>
+<body>
+
+<div id="iCenter" style = "display:none;"></div>
+<p id="location"></p>
+<span id="msg"></span>
+<h2>填写须知</h2>
+<p>
+您好！<br/>
+为了准确获取您的门店定位，请认真填写门店信息。<br/><br/>
+填写说明:<br/>
+1、请注意打开手机的"定位"功能，并正确填写店号前6位；<br/>
+2、提交时，需确保您当前正处于门店内，若您此刻不在店内，寻找当前在店内的电源帮忙填写亦可;
+</p>
+<form method="post" action= "/geo/add/">
+	{% csrf_token %}
+	<label>店&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号</label>
+	<input type="text" name = "store_code"/><span style="color:red;"> *</span><br/><br/>
+	<label>店&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;名</label>
+	<input type="text" name="store_name"/><br/><br/>
+
+	<label>填写人姓名</label>
+	<input type = "text" name="name"/><br/><br/>
+	<label>填写人电话</label>
+	<input type="text" name="phone"/><br/><br/>
+		
+	<label>您的经纬度为：(无需填写)</label><br/>	
+	<input type="text" name="location" id="ineed" readonly="readonly"/><br/><br/>
+	<input type = "checkbox" name="isat" value="yes" onclick="ok()"/>我现在正在此门店内<br/><br/>
+	<!--<input type = "radio" name="isat" value="no" checked="checked" onclick="nook()"/>不在<br/>-->
+	<input type="submit" id="submit" value="提交" disabled="disabled" style="width:100px;height:30px" onclick="return check(this.form)"/>
+</form>
+<script type="text/javascript">
+    var mapObj = new AMap.Map('iCenter');
+    mapObj.plugin('AMap.Geolocation', function () {
+        geolocation = new AMap.Geolocation({
+            enableHighAccuracy: true, // 是否使用高精度定位，默认:true
+            timeout: 10000,           // 超过10秒后停止定位，默认：无穷大
+            maximumAge: 0,            // 定位结果缓存0毫秒，默认：0
+            convert: true,            // 自动偏移坐标，偏移后的坐标为高德坐标，默认：true
+            showButton: true,         // 显示定位按钮，默认：true
+            buttonPosition: 'LB',     // 定位按钮停靠位置，默认：'LB'，左下角
+            buttonOffset: new AMap.Pixel(10, 20), // 定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+            showMarker: true,         // 定位成功后在定位到的位置显示点标记，默认：true
+            showCircle: true,         // 定位成功后用圆圈表示定位精度范围，默认：true
+            panToLocation: true,      // 定位成功后将定位到的位置作为地图中心点，默认：true
+            zoomToAccuracy:true       // 定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+        });
+        mapObj.addControl(geolocation);
+        geolocation.getCurrentPosition();
+
+        AMap.event.addListener(geolocation, 'complete', onComplete); // 返回定位信息
+        AMap.event.addListener(geolocation, 'error', onError);       // 返回定位出错信息
+    });
+
+    function onComplete(obj){
+        var res = '经纬度：' + obj.position + 
+                '\n精度范围：' + obj.accuracy + 
+                '米\n定位结果的来源：' + obj.location_type + 
+                '\n状态信息：' + obj.info + 
+                '\n地址：' + obj.formattedAddress + 
+                '\n地址信息：' + JSON.stringify(obj.addressComponent, null, 4);
+		
+		document.getElementById('ineed').value=obj.position;
+		
+    }
+
+    function onError(obj) {
+        alert(obj.info + '--' + obj.message);
+        console.log(obj);
+    }
+	function ok(){
+		var v = document.getElementsByName("isat");
+		if(v[0].checked){
+			document.getElementById("submit").disabled=false;
+		}
+		else{
+			document.getElementById("submit").disabled=true;
+		}
+	}
+	function check(form){
+		if(form.store_code.value.length!=6){
+			alert("前填写正确的店号");
+			return false;
+		}
+	}
+</script>
+</body>
+</html>
+
+
+
+<script type="text/javascript">
+   
+</script>
